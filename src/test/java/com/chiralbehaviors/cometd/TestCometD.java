@@ -4,12 +4,8 @@ import java.util.Map;
 
 import org.cometd.client.BayeuxClient;
 import org.cometd.client.transport.ClientTransport;
-import org.cometd.client.transport.HttpClientTransport;
 import org.cometd.client.transport.LongPollingTransport;
 import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.client.http.HttpClientTransportOverHTTP;
-import org.eclipse.jetty.util.thread.ScheduledExecutorScheduler;
-import org.eclipse.jetty.util.thread.Scheduler;
 import org.junit.Test;
 
 /**
@@ -42,11 +38,10 @@ public class TestCometD {
         
         String url = "http://localhost:8080/cometd";
         Map<String, Object> options = new HashMap<>();
-        HttpClientTransportOverHTTP clientTransport = new HttpClientTransportOverHTTP();
-        clientTransport.setHttpClient(null);
-        HttpClient httpClient = new HttpClient(clientTransport, null);
-        Scheduler scheduler = new ScheduledExecutorScheduler();
-        httpClient.setScheduler(scheduler);
+        
+        HttpClient httpClient = new HttpClient();
+        httpClient.start();
+        
         ClientTransport transport = new LongPollingTransport(url, options, httpClient);
         BayeuxClient client = new BayeuxClient(url, transport);
         client.handshake();

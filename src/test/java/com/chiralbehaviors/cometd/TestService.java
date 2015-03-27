@@ -15,12 +15,7 @@
  */
 package com.chiralbehaviors.cometd;
 
-import javax.inject.Inject;
-
 import org.cometd.annotation.Service;
-import org.cometd.annotation.Session;
-import org.cometd.bayeux.server.BayeuxServer;
-import org.cometd.bayeux.server.LocalSession;
 
 
 /**
@@ -30,9 +25,5 @@ import org.cometd.bayeux.server.LocalSession;
 @Service
 public class TestService {
     
-    @Inject
-    private BayeuxServer server;
-    @Session
-    private LocalSession sender;
 
 }
