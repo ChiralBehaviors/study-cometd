@@ -19,6 +19,11 @@ import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.eclipse.jetty.servlet.ServletHolder;
+
 /**
  * @author hparry
  *
@@ -42,6 +47,13 @@ public class TestApplication extends Application<TestConfiguration> {
                                                                              throws Exception {
 
         environment.jersey().register(new TestResource());
+        ServletHolder holder = environment.getApplicationContext().addServlet("org.cometd.server.CometDServlet",
+                                                                              "/cometd");
+        Map<String, String> map = new HashMap<>();
+       // map.put("transport", "org.cometd.websocket.server.WebSocketTransport");
+        map.put("transport", "org.cometd.client.transport.LongPollingTransport");
+        map.put("services", "com.chiralbehaviors.cometd.TestService");
+        holder.setInitParameters(map);
 
     }
 }

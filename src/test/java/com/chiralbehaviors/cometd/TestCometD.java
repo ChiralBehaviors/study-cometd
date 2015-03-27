@@ -1,4 +1,15 @@
 package com.chiralbehaviors.cometd;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.cometd.client.BayeuxClient;
+import org.cometd.client.transport.ClientTransport;
+import org.cometd.client.transport.HttpClientTransport;
+import org.cometd.client.transport.LongPollingTransport;
+import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.client.http.HttpClientTransportOverHTTP;
+import org.eclipse.jetty.util.thread.ScheduledExecutorScheduler;
+import org.eclipse.jetty.util.thread.Scheduler;
 import org.junit.Test;
 
 /**
@@ -24,8 +35,20 @@ import org.junit.Test;
 public class TestCometD {
 
     @Test
-    public void testDropwizardServer() throws Exception {
+    public void testCometD() throws Exception {
         TestApplication app = new TestApplication();
         app.run(new String[] {"server", "src/test/resources/server.yml"});
+        System.out.println("Success!");
+        
+        String url = "http://localhost:8080/cometd";
+        Map<String, Object> options = new HashMap<>();
+        HttpClientTransportOverHTTP clientTransport = new HttpClientTransportOverHTTP();
+        clientTransport.setHttpClient(null);
+        HttpClient httpClient = new HttpClient(clientTransport, null);
+        Scheduler scheduler = new ScheduledExecutorScheduler();
+        httpClient.setScheduler(scheduler);
+        ClientTransport transport = new LongPollingTransport(url, options, httpClient);
+        BayeuxClient client = new BayeuxClient(url, transport);
+        client.handshake();
     }
 }
