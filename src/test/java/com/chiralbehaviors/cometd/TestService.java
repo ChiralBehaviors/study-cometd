@@ -15,7 +15,15 @@
  */
 package com.chiralbehaviors.cometd;
 
+import javax.annotation.PostConstruct;
+import javax.inject.Inject;
+
 import org.cometd.annotation.Service;
+import org.cometd.annotation.Session;
+import org.cometd.bayeux.server.BayeuxServer;
+import org.cometd.bayeux.server.ConfigurableServerChannel;
+import org.cometd.bayeux.server.LocalSession;
+import org.cometd.bayeux.server.ServerChannel;
 
 
 /**
@@ -24,6 +32,28 @@ import org.cometd.annotation.Service;
  */
 @Service
 public class TestService {
-    
+    @Inject
+    private BayeuxServer bayeuxServer;
+    @Session
+    private LocalSession sender;
+
+    private final String _channelName;
+
+    private ServerChannel _channel = null;
+
+    public TestService() {
+       _channelName = "/myChannel/";
+    }
+
+    @PostConstruct
+    private void initChannel() {
+       bayeuxServer.createChannelIfAbsent(_channelName, new ConfigurableServerChannel.Initializer() {
+         @Override
+         public void configureChannel(ConfigurableServerChannel channel) {
+            // ...
+         }
+       });
+     _channel = bayeuxServer.getChannel(_channelName);
+    }
 
 }
