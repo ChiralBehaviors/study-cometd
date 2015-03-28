@@ -15,6 +15,12 @@
  */
 package com.chiralbehaviors.cometd;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
@@ -24,7 +30,7 @@ import org.cometd.bayeux.server.BayeuxServer;
 import org.cometd.bayeux.server.ConfigurableServerChannel;
 import org.cometd.bayeux.server.LocalSession;
 import org.cometd.bayeux.server.ServerChannel;
-
+import org.cometd.bayeux.server.ServerMessage;
 
 /**
  * @author hparry
@@ -33,27 +39,45 @@ import org.cometd.bayeux.server.ServerChannel;
 @Service
 public class TestService {
     @Inject
-    private BayeuxServer bayeuxServer;
+    private BayeuxServer  bayeuxServer;
     @Session
-    private LocalSession sender;
+    private LocalSession  sender;
 
-    private final String _channelName;
+    private final String  _channelName;
 
     private ServerChannel _channel = null;
 
     public TestService() {
-       _channelName = "/myChannel/";
+        _channelName = "/myChannel";
     }
 
     @PostConstruct
     private void initChannel() {
-       bayeuxServer.createChannelIfAbsent(_channelName, new ConfigurableServerChannel.Initializer() {
-         @Override
-         public void configureChannel(ConfigurableServerChannel channel) {
-            // ...
-         }
-       });
-     _channel = bayeuxServer.getChannel(_channelName);
+        bayeuxServer.createChannelIfAbsent(_channelName,
+                                           new ConfigurableServerChannel.Initializer() {
+                                               @Override
+                                               public void configureChannel(ConfigurableServerChannel channel) {
+                                                   // ...
+                                               }
+                                           });
+        _channel = bayeuxServer.getChannel(_channelName);
+        ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+        scheduler.scheduleAtFixedRate(new Runnable() {
+
+            @Override
+            public void run() {
+                Map<String, String> data = new HashMap<>();
+                data.put("channelId", _channelName);
+                data.put("message", "Hello Cleveland!");
+                ServerMessage.Mutable message = bayeuxServer.newMessage();
+                message.setChannel(_channelName);
+                message.setData("Hello Cleveland");
+                message.setLazy(true);
+                
+                _channel.publish(sender, message);
+
+            }
+        }, 0, 500, TimeUnit.MILLISECONDS);
     }
 
 }

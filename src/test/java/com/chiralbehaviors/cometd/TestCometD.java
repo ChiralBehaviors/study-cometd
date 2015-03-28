@@ -2,6 +2,7 @@ package com.chiralbehaviors.cometd;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.cometd.bayeux.Message;
 import org.cometd.bayeux.client.ClientSessionChannel;
@@ -10,6 +11,10 @@ import org.cometd.client.transport.ClientTransport;
 import org.cometd.client.transport.LongPollingTransport;
 import org.eclipse.jetty.client.HttpClient;
 import org.junit.Test;
+
+import com.hellblazer.utils.Condition;
+import com.hellblazer.utils.Utils;
+
 import static org.junit.Assert.*;
 
 /**
@@ -34,11 +39,13 @@ import static org.junit.Assert.*;
  */
 public class TestCometD {
 
-    private final ClientSessionChannel.MessageListener testListener = new TestListener();
+    private final ClientSessionChannel.MessageListener testListener    = new TestListener();
+    private AtomicBoolean                              messageReceived = new AtomicBoolean(
+                                                                                           false);
 
     @Test
     public void testCometD() throws Exception {
-        String channelName = "/myChannel/";
+        String channelName = "/myChannel";
         TestApplication app = new TestApplication();
         app.run(new String[] { "server", "src/test/resources/server.yml" });
         System.out.println("Success!");
@@ -57,11 +64,17 @@ public class TestCometD {
         assertTrue(handshaken);
         if (handshaken) {
             client.getChannel(channelName).subscribe(testListener);
-        } 
+        }
+        assertTrue(Utils.waitForCondition(60000, new Condition() {
+
+            @Override
+            public boolean isTrue() {
+                return messageReceived.get();
+            }
+        }));
     }
 
-    private static class TestListener implements
-            ClientSessionChannel.MessageListener {
+    private class TestListener implements ClientSessionChannel.MessageListener {
 
         /* (non-Javadoc)
          * @see org.cometd.bayeux.client.ClientSessionChannel.MessageListener#onMessage(org.cometd.bayeux.client.ClientSessionChannel, org.cometd.bayeux.Message)
@@ -69,6 +82,7 @@ public class TestCometD {
         @Override
         public void onMessage(ClientSessionChannel channel, Message message) {
             System.out.println("Message received: " + message);
+            messageReceived.set(true);
 
         }
 

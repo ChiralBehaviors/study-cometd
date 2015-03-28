@@ -31,6 +31,11 @@
           <artifactId>cometd-java-client</artifactId>
           <version>3.0.4</version>
       </dependency>
+      <dependency>
+          <groupId>com.hellblazer</groupId>
+          <artifactId>utils</artifactId>
+          <version>0.0.6-SNAPSHOT</version>
+      </dependency>
     </dependencies>
   <build>
     <plugins>
